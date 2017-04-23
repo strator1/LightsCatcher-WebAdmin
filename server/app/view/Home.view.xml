@@ -4,16 +4,22 @@
       xmlns:core="sap.ui.core"
       xmlns="sap.m">
    <Page
+         id="idHomePage"
          showHeader="true"
          busyIndicatorDelay="0"
          busy="{viewDetailModel>/busy}"
          title="Lights Catcher Admin Panel"
+         floatingFooter="true"
          enableScrolling="true">
       <content>
          <l:VerticalLayout
                width="100%">
             <l:content>
                <Table id="idLightsTable"
+                      mode="MultiSelect"
+                      includeItemInSelection="true"
+                      selectionChange="onTableSelectionChange"
+                      inset="true"
                       growing="true"
                       growingThreshold="10"
                       items="{lightsModel>/}">
@@ -39,7 +45,7 @@
                         <Text text="Image"/>
                      </Column>
                      <Column minScreenWidth="Tablet" demandPopin="true">
-                        <Text text="Position"/>
+                        <Text text="Phases"/>
                      </Column>
                      <Column minScreenWidth="Tablet" demandPopin="true">
                         <Text text="User"/>
@@ -56,14 +62,15 @@
                         <cells>
                            <Image
                                  src="{lightsModel>imageUrl}"
+                                 press="onImagePressed"
                                  width="50%"
                                  height="10%"/>
-                           <Text text="{lightsModel>longitude}"/>
+                           <Text text="{lightsModel>lightPhases}"/>
                            <Link text="{lightsModel>user}"/>
                            <Text text="{path: 'lightsModel>createdAt', formatter: '.formatter.formatTimestampToData'}"/>
                            <VBox>
                               <Button type="Transparent" icon="sap-icon://delete" text="Remove Picture" press="onRemovePicturePress" />
-                              <Button type="Transparent" icon="sap-icon://private" text="Remove Picture &amp; Ban User" press="onRemovePicAndUserPress" />
+                              <Button type="Reject" icon="sap-icon://private" text="Remove Picture &amp; Ban User" press="onRemovePicAndUserPress" />
                            </VBox>
                         </cells>
                      </ColumnListItem>
@@ -72,5 +79,12 @@
             </l:content>
          </l:VerticalLayout>
       </content>
+      <footer>
+         <Toolbar>
+            <ToolbarSpacer />
+            <Button id="idDeleteSelectedBtn" icon="sap-icon://delete" text="Remove selected" enabled="false" press="onRemoveAllSelected" />
+            <Button id="idBanAllSelectedBtn" type="Reject" icon="sap-icon://private" text="Remove &amp; Ban selected" enabled="false" press="onRemoveBanAllSelected" />
+         </Toolbar>
+      </footer>
    </Page>
 </core:View>

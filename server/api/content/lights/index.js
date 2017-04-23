@@ -12,6 +12,19 @@ function deletePhotoWithKey(key) {
    ]);
 }
 
+function deactivateUser(uid) {
+   return admin.auth().updateUser(uid, {
+      disabled: true
+   });/*
+      .then(function(userRecord) {
+         // See the UserRecord reference doc for the contents of userRecord.
+         console.log("Successfully updated user", userRecord.toJSON());
+      })
+      .catch(function(error) {
+         console.log("Error updating user:", error);
+      });*/
+}
+
 export default () => {
    let lights = Router();
 
@@ -54,7 +67,27 @@ export default () => {
          res.status(200).json({success: true, data: [], msg: "Photo deleted"});
       }).catch(err => {
          res.status(500).json({success: false, data: [], msg: "Error deleting photo"});
-      })
+      });
+   });
+
+   lights.delete("/:key/:uid", (req, res) => {
+
+      if (req.params.key == "" || req.params.uid == "") {
+         res.status(400).json({success: false, data:[], msg: "Please provide a key"});
+         return;
+      }
+
+      deletePhotoWithKey(req.params.key).then(success => {
+         debugger;
+         deactivateUser(req.params.uid).then(success => {
+            debugger;
+            res.status(200).json({success: true, data: [], msg: "Photo deleted and User banned"});
+         });
+
+      }).catch(err => {
+         debugger;
+         res.status(500).json({success: false, data: [], msg: "Error deleting photo"});
+      });
    });
 
 
