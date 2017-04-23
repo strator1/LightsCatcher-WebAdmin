@@ -7,6 +7,7 @@
          showHeader="true"
          busyIndicatorDelay="0"
          busy="{viewDetailModel>/busy}"
+         title="Lights Catcher Admin Panel"
          enableScrolling="true">
       <content>
          <l:VerticalLayout
@@ -20,8 +21,8 @@
                      <Toolbar>
                         <Title text="Lights" level="H2"/>
                         <ToolbarSpacer></ToolbarSpacer>
-                        <Button tooltip="View Settings" icon="sap-icon://drop-down-list"
-                                press="handleViewSettingsDialogButtonPressed"/>
+                        <Button tooltip="Refresh" icon="sap-icon://refresh"
+                                press="onRefreshListPressed"/>
                      </Toolbar>
                   </headerToolbar>
                   <infoToolbar>
@@ -60,7 +61,10 @@
                            <Text text="{lightsModel>longitude}"/>
                            <Link text="{lightsModel>user}"/>
                            <Text text="{path: 'lightsModel>createdAt', formatter: '.formatter.formatTimestampToData'}"/>
-                           <Text text="{lightsModel>user}"/>
+                           <VBox>
+                              <Button type="Transparent" icon="sap-icon://delete" text="Remove Picture" press="onRemovePicturePress" />
+                              <Button type="Transparent" icon="sap-icon://private" text="Remove Picture &amp; Ban User" press="onRemovePicAndUserPress" />
+                           </VBox>
                         </cells>
                      </ColumnListItem>
                   </items>

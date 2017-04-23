@@ -23,9 +23,45 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             var oArgs = oEvent.getParameter("arguments");
             var oQuery = oArgs["?query"];
 
+            this.loadLights();
+         },
+
+         loadLights: function() {
+            this.oTable.setBusy(true);
+
             $.get("/api/lights", function(data) {
                me.lightsModel.setData(data.data);
+               me.oTable.setBusy(false);
             });
+         },
+
+         onRefreshListPressed: function() {
+            this.loadLights();
+         },
+
+         onRemovePicturePress: function(oEvent) {
+            var light = oEvent.getSource().getBindingContext("lightsModel").getObject();
+
+            var del = $.ajax({
+               url : "/api/lights/" + light.key,
+               type : 'DELETE'
+            });
+
+            del.success($.proxy(function(data) {
+               //Remove light from model
+               var index = this.lightsModel.oData.indexOf(light);
+               this.lightsModel.oData.splice(index, 1);
+               this.lightsModel.refresh();
+            }, me));
+
+            del.error($.proxy(function(data) {
+               //Show error dialog
+            }, me))
+         },
+
+         onRemovePicAndUserPress: function(oEvent) {
+            var light = oEvent.getSource().getBindingContext("lightsModel").getObject();
+            debugger;
          }
 
       });
