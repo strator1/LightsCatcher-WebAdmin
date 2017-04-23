@@ -1,4 +1,4 @@
-##**Lights Catcher Admin Portal**
+**Lights Catcher Admin Portal**
 
 - Bilder review/löschen
 - User review/ban
@@ -8,7 +8,7 @@ Frontend: SAPUI5
 
 ----------
 
-##*Installation Notes*
+**Installation Notes**
 
 Vorausetzungen:
 
