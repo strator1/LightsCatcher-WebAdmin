@@ -1,0 +1,35 @@
+.columnAccept {
+    background: #68c35b !important;
+}
+
+.columnWarning {
+    background: #fde773 !important;
+}
+
+.columnCancel {
+    background: #ff5226 !important;
+}
+
+.columnWrench {
+    background: #c8e751 !important;
+}
+
+.columnLightbulb {
+    background: #ff8634 !important;
+}
+
+.columnIncident {
+    background: #00b1d5 !important;
+}
+
+.columnCancel1 {
+    background: #1b77c8 !important;
+}
+
+.font-weight-bold {
+    font-weight: bold!important;
+}
+
+.float-inherit {
+    float: inherit!important;
+}
