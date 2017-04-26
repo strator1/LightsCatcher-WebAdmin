@@ -38,7 +38,23 @@ export default () => {
    // GET
 
    lights.get("/", (req, res) => {
-      
+
+      if (req.query.user !== undefined) {
+         admin.database().ref("lights").orderByChild("user").equalTo(req.query.user).once("value").then(snapshot => {
+            var output = [];
+            snapshot.forEach(function(childSnapshot) {
+               var val = childSnapshot.val();
+               val.key = childSnapshot.getKey();
+               output.push(val);
+            });
+            res.status(200).json({success: true, data: output});
+         }).catch(error => {
+            res.status(500).json({success: false, data: [], msg: error});
+         });
+
+         return;
+      }
+
       admin.database().ref("lights").orderByChild("createdAt").limitToLast(1000).once("value").then(snapshot => {
          var output = [];
          snapshot.forEach(function(childSnapshot) {

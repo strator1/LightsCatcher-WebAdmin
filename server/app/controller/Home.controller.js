@@ -15,6 +15,9 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             this.lightsModel = new JSONModel({});
             this.getView().setModel(this.lightsModel, "lightsModel");
 
+            this.userModel = new JSONModel({});
+            this.getView().setModel(this.userModel, "userModel");
+
             this.viewModel = new JSONModel({
                busy: false
             });
@@ -22,9 +25,11 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             this.getView().setModel(this.viewModel, "viewModel");
 
             this.selectedLights = [];
+            this.delayedSearch = null;
 
             this.oPage = this.getView().byId("idHomePage");
             this.oTable = this.getView().byId("idLightsTable");
+            this.oUserSearchField = this.getView().byId("userSearchField");
             this.deleteSelectedBtn = this.getView().byId("idDeleteSelectedBtn");
             this.banAllSelectedBtn = this.getView().byId("idBanAllSelectedBtn");
 
@@ -39,11 +44,13 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             this.loadLights();
          },
 
-         loadLights: function(bSurpressMessage) {
+         loadLights: function(bSurpressMessage, byUser) {
             bSurpressMessage = bSurpressMessage === undefined ? false : bSurpressMessage;
             this.oTable.setBusy(true);
 
-            $.get("/api/lights", function(data) {
+            var uri = byUser === undefined ? "/api/lights" : "/api/lights?user=" + byUser;
+
+            $.get(uri, function(data) {
                data.data.forEach(function(d) {
                   if (!d.hasOwnProperty("lightPositions")) {
                      d.lightPhases = "-";
@@ -233,6 +240,68 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             });
          },
 
+         onShowUserDetailsPress: function(oEvent) {
+            this.uid = oEvent.getSource().getBindingContext("lightsModel").getObject().user;
+
+            this._getUserDetailDialog().open();
+
+            this._getUserDetailDialog().setBusy(true);
+            var get = $.ajax({
+               url: "/api/users/" + this.uid,
+               type: 'GET'
+            });
+
+            get.success(function(data) {
+               me.userModel.setData(data.data);
+               me._getUserDetailDialog().setBusy(false);
+            });
+
+            get.error(function(data) {
+               //Show error dialog
+               me._getUserDetailDialog().setBusy(false);
+               MessageBox.error(data.msg);
+            });
+         },
+
+         updateUser: function() {
+            var put = $.ajax({
+               url: "/api/users/" + this.uid,
+               type: 'PUT',
+               data: this.userModel.oData
+            });
+
+            this._getUserDetailDialog().setBusy(true);
+            put.success(function(data) {
+               MessageToast.show("User updated!");
+               me._getUserDetailDialog().setBusy(false);
+            });
+
+            put.error(function(data) {
+               //Show error dialog
+               me._getUserDetailDialog().setBusy(false);
+               MessageBox.error(data.msg);
+            });
+         },
+
+         onSearchByUser: function(oEvent) {
+            var sQuery = oEvent.getSource().getValue();
+            var that = this;
+            clearTimeout(this.delayedSearch);
+
+            if (sQuery && sQuery.length > 0) {
+               this.delayedSearch = setTimeout(this.loadLights.bind(this, true, sQuery), 400);
+            } else {
+               this.loadLights(true);
+            }
+         },
+
+         onSearchByUserPress: function(oEvent) {
+            var uid = oEvent.getSource().getBindingContext("lightsModel").getObject().user;
+            this.oUserSearchField.setValue(uid);
+            this.loadLights(true, uid);
+            this.oPage.scrollTo(0,0);
+         },
+
          _getDeleteConfirmationDialog: function(text, okayCb) {
             this._deleteConfirmationDialog = new Dialog({
                title: "Warning",
@@ -266,6 +335,43 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             }
 
             return this._deleteConfirmationDialog;
+         },
+
+         _getUserDetailDialog: function() {
+
+            if (!this._userDetailDialog) {
+
+               this._userDetailContent = sap.ui.xmlfragment("userDetailPopover",
+                  "LightsCatcher.view.UserDetailContent", this);
+
+               this._userDetailDialog = new Dialog({
+                  title: "User Information",
+                  content: this._userDetailContent,
+                  beginButton: new Button({
+                     text: "Save",
+                     press: function() {
+                        me.updateUser();
+                        this.getParent().close();
+                     }
+                  }),
+                  endButton: new Button({
+                     text: "Cancel",
+                     press: function() {
+                        this.getParent().close();
+                     }
+                  }),
+                  beforeOpen: function() {
+                     me.userModel.setData({});
+                  },
+                  afterClose: function() {
+                     //			this.destroy();
+                  }
+               });
+
+               this.getView().addDependent(this._userDetailDialog);
+            }
+
+            return this._userDetailDialog;
          },
 
          _getKeyUserData: function() {

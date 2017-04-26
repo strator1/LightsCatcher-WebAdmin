@@ -33,7 +33,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({
    limit : config.bodyLimit
 }));
-app.use(expressValidator())
+app.use(expressValidator());
 
 // api router
 app.use("/api", apiRouter());

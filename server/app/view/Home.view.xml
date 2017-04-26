@@ -27,19 +27,11 @@
                      <Toolbar>
                         <Title text="Lights" level="H2"/>
                         <ToolbarSpacer></ToolbarSpacer>
+                        <SearchField id="userSearchField" width="40%" placeholder="Search by User" liveChange="onSearchByUser" class="sapUiSmallMargin" />
                         <Button tooltip="Refresh" icon="sap-icon://refresh"
                                 press="onRefreshListPressed"/>
                      </Toolbar>
                   </headerToolbar>
-                  <infoToolbar>
-                     <Toolbar
-                           id="vsdFilterBar"
-                           active="true"
-                           visible="false"
-                           press="[handleViewSettingsDialogFilterBarPressed, views.control.tableViewSettingsDialog]">
-                        <Label id="vsdFilterLabel" text="?"/>
-                     </Toolbar>
-                  </infoToolbar>
                   <columns>
                      <Column>
                         <Text text="Image"/>
@@ -66,9 +58,10 @@
                                  width="50%"
                                  height="10%"/>
                            <Text text="{lightsModel>lightPhases}"/>
-                           <Link text="{lightsModel>user}"/>
+                           <Link text="{lightsModel>user}" press="onShowUserDetailsPress"/>
                            <Text text="{path: 'lightsModel>createdAt', formatter: '.formatter.formatTimestampToData'}"/>
                            <VBox>
+                              <Button type="Transparent" icon="sap-icon://search" text="Search by user" press="onSearchByUserPress" />
                               <Button type="Transparent" icon="sap-icon://delete" text="Remove Picture" press="onRemovePicturePress" />
                               <Button type="Reject" icon="sap-icon://private" text="Remove Picture &amp; Ban User" press="onRemovePicAndUserPress" />
                            </VBox>
