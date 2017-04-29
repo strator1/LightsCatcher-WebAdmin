@@ -13,16 +13,12 @@ function deletePhotoWithKey(key) {
 }
 
 function deactivateUser(uid) {
-   return admin.auth().updateUser(uid, {
-      disabled: true
-   });/*
-      .then(function(userRecord) {
-         // See the UserRecord reference doc for the contents of userRecord.
-         console.log("Successfully updated user", userRecord.toJSON());
+   return Promise.all([
+      admin.database().ref(`bannedUsers/${uid}`).set(true),
+      admin.auth().updateUser(uid, {
+         disabled: true
       })
-      .catch(function(error) {
-         console.log("Error updating user:", error);
-      });*/
+   ]);
 }
 
 export default () => {
