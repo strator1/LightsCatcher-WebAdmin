@@ -67,7 +67,7 @@ export default () => {
       let user = {
          email: req.body.email,
          name: req.body.name,
-         points: req.body.points
+         points: parseInt(req.body.points)
       };
 
       console.log(req.body.email);

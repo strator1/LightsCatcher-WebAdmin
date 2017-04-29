@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import cors from "cors";
 import expressValidator from "express-validator";
+import opn from "opn";
 
 import * as admin from "firebase-admin";
 import ServiceAccount from "./helpers/serviceAccountKey.json";
@@ -45,6 +46,7 @@ admin.initializeApp({
 
 app.listen(PORT, function() {
    console.log("Server running on " + PORT);
+   opn("http://localhost:4000/app/");
 });
 
 /*const adminService = new AdminService();*/
