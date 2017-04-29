@@ -8,7 +8,7 @@ function deletePhotoWithKey(key) {
 
    return Promise.all([
       file.delete(),
-      admin.database().ref("lights").child(key).remove()
+      admin.database().ref("lights/v1_0").child(key).remove()
    ]);
 }
 
@@ -40,7 +40,7 @@ export default () => {
    lights.get("/", (req, res) => {
 
       if (req.query.user !== undefined) {
-         admin.database().ref("lights").orderByChild("user").equalTo(req.query.user).once("value").then(snapshot => {
+         admin.database().ref("lights/v1_0").orderByChild("user").equalTo(req.query.user).once("value").then(snapshot => {
             var output = [];
             snapshot.forEach(function(childSnapshot) {
                var val = childSnapshot.val();
@@ -55,7 +55,7 @@ export default () => {
          return;
       }
 
-      admin.database().ref("lights").orderByChild("createdAt").limitToLast(1000).once("value").then(snapshot => {
+      admin.database().ref("lights/v1_0").orderByChild("createdAt").limitToLast(1000).once("value").then(snapshot => {
          var output = [];
          snapshot.forEach(function(childSnapshot) {
             var val = childSnapshot.val();
