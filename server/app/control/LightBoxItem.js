@@ -10,7 +10,7 @@ sap.ui.define(["sap/m/LightBoxItem"],
 
          onImageLoaded: function() {
             var that = this;
-            this._clicks = 0;
+            this.markerSize = 10;
 
             this._jImage = this.getAggregation("_image").getDomRef();
             this._jParent = this.getParent().getDomRef();
@@ -35,6 +35,7 @@ sap.ui.define(["sap/m/LightBoxItem"],
             });
 
             this.addMouseEvents();
+            this.onResize();
          },
 
          addMouseEvents: function() {
@@ -91,8 +92,8 @@ sap.ui.define(["sap/m/LightBoxItem"],
                that.lights.push(newLight);
 
                that.updateRelImagePos(newLight, $(e.target), {
-                  top: e.pageY - 5,
-                  left: e.pageX - 5
+                  top: e.pageY - that.markerSize / 2,
+                  left: e.pageX - that.markerSize / 2
                });
                that.addImageMarker(newLight);
             });
@@ -107,8 +108,8 @@ sap.ui.define(["sap/m/LightBoxItem"],
             var offTop = customOffset === undefined ? newPos.offset().top : customOffset.top;
 
             // 1. get abs. pos of marker in current imageSize
-            var absX = offLeft - parent.offset().left - imageSize.x + 5; //plus marker width
-            var absY = offTop - parent.offset().top - imageSize.y + 5; //plus marker height
+            var absX = offLeft - parent.offset().left - imageSize.x + this.markerSize / 2; //plus marker width
+            var absY = offTop - parent.offset().top - imageSize.y + this.markerSize / 2; //plus marker height
 
             if (absX < 0 || absY < 0 || absX > imageSize.w || absY > imageSize.h) return;
 
@@ -150,6 +151,7 @@ sap.ui.define(["sap/m/LightBoxItem"],
 
          applyMarkerStyle: function(element, light) {
             element.css('background-color', light.phase == 0 ? 'rgba(255, 0, 0, 0.68)' : 'rgba(0, 128, 0, 0.68)');
+            this.setMarkerSize(element, this.markerSize);
 
             if (typeof light.isMostRelevant === "boolean" && light.isMostRelevant) {
                element.css('border', '1px solid yellow');
@@ -160,6 +162,11 @@ sap.ui.define(["sap/m/LightBoxItem"],
             } else {
                element.css('border', light.phase == 0 ? '1px solid red' : '1px solid green');
             }
+         },
+
+         setMarkerSize: function(element, size) {
+            element.css('width', this.markerSize + 'px');
+            element.css('height', this.markerSize + 'px');
          },
 
          onElementDblClick: function(e) {
@@ -207,9 +214,11 @@ sap.ui.define(["sap/m/LightBoxItem"],
                y: img.offsetTop
             };
 
+            this.markerSize = img.width > img.height ? img.height * 0.04 : img.width * 0.04;
+
             this.lightsOnImage.forEach(function(l) {
                var markerPos = that.getMarkerCoordinates(l.light);
-
+               that.setMarkerSize(l.element, that.markerSize);
                l.element.css("top", markerPos.y);
                l.element.css("left", markerPos.x)
             });
@@ -219,8 +228,8 @@ sap.ui.define(["sap/m/LightBoxItem"],
             var lightX = this.imgSize.w > this.imgSize.h ? light.y : light.x;
             var lightY = this.imgSize.w > this.imgSize.h ? (1 - light.x) : light.y;
 
-            var x = (this.imgSize.w * lightX) + this.imgSize.x - 5; //minus marker width
-            var y = (this.imgSize.h * lightY) + this.imgSize.y - 5; //minus marker height
+            var x = (this.imgSize.w * lightX) + this.imgSize.x - this.markerSize / 2; //minus marker width
+            var y = (this.imgSize.h * lightY) + this.imgSize.y - this.markerSize / 2; //minus marker height
 
             return {
                x: x,
