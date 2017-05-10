@@ -66,6 +66,15 @@ export default () => {
 
    });
 
+   //PUT
+   lights.put("/positions/:id", (req, res) => {
+      admin.database().ref(`lights/v1_0/${req.params.id}/lightPositions`).set(JSON.parse(req.body.positions)).then(snapshot => {
+         res.status(200).json({success: true, data: snapshot});
+      }).catch(error => {
+         res.status(500).json({success: false, data: [], msg: "Updating lightPositions not successful"});
+      });
+   });
+
    //Delete
 
    lights.delete("/:key", (req, res) => {

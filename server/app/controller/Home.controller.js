@@ -1,4 +1,4 @@
-sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "LightsCatcher/helpers/formatter", "sap/m/MessageBox", "sap/m/MessageToast", "sap/m/LightBox",
+sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "LightsCatcher/helpers/formatter", "sap/m/MessageBox", "sap/m/MessageToast", "LightsCatcher/control/LightBox",
       "LightsCatcher/control/LightBoxItem", "sap/m/Dialog", "sap/m/Text", "sap/m/Button"],
 
    function(Controller,
@@ -57,6 +57,8 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
                      return;
                   }
 
+                  if (!d.lightPositions instanceof Array) return;
+
                   var lightPhases = d.lightPositions.map(function(l) {
                      return l.phase == 0 ? "Red" : "Green";
                   });
@@ -95,13 +97,36 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
          onImagePressed: function(oEvent) {
             var light = oEvent.getSource().getBindingContext("lightsModel").getObject();
-
+            var copiedPositions = JSON.parse(JSON.stringify(light.lightPositions));
+            
             var lightBox = new LightBox({
                imageContent: new LightBoxItem({
                   imageSrc: light.imageUrl,
-                  lights: light.lightPositions,
+                  lights: copiedPositions,
                   alt: "Alt"
-               })
+               }),
+               onSave: function(oEvent) {
+                  var that = this;
+                  var newLights = oEvent.getParameter("newLights");
+
+                  var put = $.ajax({
+                     url: "/api/lights/positions/" + light.key,
+                     type: 'PUT',
+                     data: {positions: JSON.stringify(newLights)}
+                  });
+
+                  this.setBusy(true);
+                  put.success(function(data) {
+                     MessageToast.show("LightPositions updated!");
+                     that.setBusy(false);
+                  });
+
+                  put.error(function(data) {
+                     //Show error dialog
+                     that.setBusy(false);
+                     MessageBox.error(data.msg);
+                  });
+               }
             });
 
             lightBox.open();

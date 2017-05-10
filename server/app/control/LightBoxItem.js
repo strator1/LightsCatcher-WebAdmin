@@ -31,11 +31,77 @@ sap.ui.define(["sap/m/LightBoxItem"],
             $(window).resize(function() {
                that.onResize();
             });
+
+            this.addMouseEvents();
+         },
+
+         addMouseEvents: function() {
+            var that = this;
+            var imageWrapper = $($(this.getParent().getDomRef()).children()[0])
+            this.$dragging = null;
+            this.isDragging = false;
+
+            $(imageWrapper).on("mousedown", "div", function(e) {
+               $(this).attr("unselectable", "on").addClass('draggable');
+
+               var el_w = $('.draggable').outerWidth(),
+                  el_h = $('.draggable').outerHeight();
+
+               that.$dragging = $(e.target);
+
+               $(imageWrapper).on("mousemove", function(e) {
+                  if (that.isDragging) {
+                     that.$dragging.offset({
+                        top: e.pageY - el_h / 2,
+                        left: e.pageX - el_w / 2
+                     });
+                  }
+               });
+
+               that.isDragging = true;
+            }).on("mouseup", ".draggable", function(e) {
+               //update rel Pos on image
+               var filtered = that.lightsOnImage.filter(function(l) {
+                  return l.id === that.$dragging.attr("id");
+               });
+
+               if (filtered.length > 0) {
+                  that.updateRelImagePos(filtered[0].light, that.$dragging);
+               }
+               that.isDragging = false;
+               $(this).removeAttr("unselectable").removeClass('draggable');
+
+               that.onResize();
+            });
+
+         },
+
+         updateRelImagePos: function(light, newPos) {
+            var parent = newPos.offsetParent();
+            var imageSize = this.imgSize;
+
+            // 1. get abs. pos of marker in current imageSize
+            var absX = newPos.offset().left - parent.offset().left - imageSize.x + 5; //plus marker width
+            var absY = newPos.offset().top - parent.offset().top - imageSize.y + 5; //plus marker height
+
+            if (absX < 0 || absY < 0 || absX > imageSize.w || absY > imageSize.h) return;
+
+            if (imageSize.w > imageSize.h) {
+               light.x = 1 - (absY / imageSize.h);
+               light.y = absX / imageSize.w;
+            } else {
+               light.x = absX / imageSize.w;
+               light.y = absY / imageSize.h;
+            }
+
+            //light.element = newPos;
          },
 
          addImageMarker: function(light) {
-            var d = $(document.createElement('div'));
             var imageWrapper = $($(this.getParent().getDomRef()).children()[0]);
+            var id = this._guid();
+            var d = $(document.createElement('div'));
+            d.attr("id", id);
             d.addClass("image-marker").appendTo(imageWrapper);
 
             var markerPos = this.getMarkerCoordinates(light);
@@ -43,11 +109,16 @@ sap.ui.define(["sap/m/LightBoxItem"],
             d.css('top', markerPos.y);
             d.css('left', markerPos.x);
             d.css('background-color', light.phase == 0 ? 'rgba(255, 0, 0, 0.68)' : 'rgba(0, 128, 0, 0.68)');
-            d.css('border', light.phase == 0 ? '1px solid red' : '1px solid green');
+
+            if (light.isMostRelevant) {
+               d.css('border', '1px solid yellow');
+            } else {
+               d.css('border', light.phase == 0 ? '1px solid red' : '1px solid green');
+            }
 
             this.lightsOnImage.push({
-               x: light.x,
-               y: light.y,
+               id: id,
+               light: light,
                element: d
             });
          },
@@ -64,7 +135,7 @@ sap.ui.define(["sap/m/LightBoxItem"],
             };
 
             this.lightsOnImage.forEach(function(l) {
-               var markerPos = that.getMarkerCoordinates(l);
+               var markerPos = that.getMarkerCoordinates(l.light);
 
                l.element.css("top", markerPos.y);
                l.element.css("left", markerPos.x)
@@ -92,6 +163,17 @@ sap.ui.define(["sap/m/LightBoxItem"],
             if (sImageState == sap.m.LightBoxLoadingStates.Loaded) {
                this.onImageLoaded();
             }
+         },
+
+         _guid: function() {
+            function s4() {
+               return Math.floor((1 + Math.random()) * 0x10000)
+                  .toString(16)
+                  .substring(1);
+            }
+
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+               s4() + '-' + s4() + s4() + s4();
          }
 
       });
