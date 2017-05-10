@@ -98,7 +98,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
          onImagePressed: function(oEvent) {
             var light = oEvent.getSource().getBindingContext("lightsModel").getObject();
             var copiedPositions = JSON.parse(JSON.stringify(light.lightPositions));
-            
+
             var lightBox = new LightBox({
                imageContent: new LightBoxItem({
                   imageSrc: light.imageUrl,
@@ -117,6 +117,8 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
                   this.setBusy(true);
                   put.success(function(data) {
+                     light.lightPositions = newLights;
+                     me.lightsModel.refresh();
                      MessageToast.show("LightPositions updated!");
                      that.setBusy(false);
                   });
