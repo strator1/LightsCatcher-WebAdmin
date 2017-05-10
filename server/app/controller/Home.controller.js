@@ -1,5 +1,5 @@
 sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "LightsCatcher/helpers/formatter", "sap/m/MessageBox", "sap/m/MessageToast", "sap/m/LightBox",
-      "sap/m/LightBoxItem", "sap/m/Dialog", "sap/m/Text", "sap/m/Button"],
+      "LightsCatcher/control/LightBoxItem", "sap/m/Dialog", "sap/m/Text", "sap/m/Button"],
 
    function(Controller,
             JSONModel, formatter, MessageBox, MessageToast, LightBox, LightBoxItem, Dialog, Text, Button) {
@@ -99,6 +99,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             var lightBox = new LightBox({
                imageContent: new LightBoxItem({
                   imageSrc: light.imageUrl,
+                  lights: light.lightPositions,
                   alt: "Alt"
                })
             });
