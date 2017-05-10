@@ -4,7 +4,8 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
       return LightBox.extend("LightsCatcher.control.LightBox", {
          metadata: {
             aggregations: {
-               _saveButton: {type: 'sap.m.Button', multiple: false, visibility: 'hidden'}
+               _saveButton: {type: 'sap.m.Button', multiple: false, visibility: 'hidden'},
+               _approveButton: {type: 'sap.m.Button', multiple: false, visibility: 'hidden'}
             },
 
             events: {
@@ -12,6 +13,9 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
                   parameters : {
                      lights : {type : "array"},
                   }
+               },
+               onApprove: {
+                  parameters: {}
                }
             }
          },
@@ -22,6 +26,7 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
             }
 
             this._saveButtonText = "Save";
+            this._approveButtonText = "Approve Picture";
          },
 
          onSaveLights: function() {
@@ -29,6 +34,10 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
             this.fireEvent("onSave", {
                newLights: lights
             })
+         },
+
+         onApprovePicture: function() {
+            this.fireEvent("onApprove", null);
          },
 
          _getSaveButton: function () {
@@ -47,6 +56,26 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
             }
 
             return saveButton;
+         },
+
+         _getApproveButton: function () {
+            var approveButton = this.getAggregation('_approveButton');
+
+            if (!approveButton) {
+               approveButton = new Button({
+                  id: this.getId() + '-approveButton',
+                  icon: "sap-icon://accept",
+                  visible: false,
+                  text: this._approveButtonText,
+                  type: sap.m.ButtonType.Accept,
+                  press: function () {
+                     this.onApprovePicture();
+                  }.bind(this)
+               });
+               this.setAggregation('_approveButton', approveButton, true);
+            }
+
+            return approveButton;
          },
 
          renderer: {
@@ -82,6 +111,7 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
                }
 
                oRm.write('</div>');
+               oRm.renderControl(oControl._getApproveButton());
                oRm.renderControl(oControl._getSaveButton());
                oRm.renderControl(oControl._getCloseButton());
                oRm.write('</div>');

@@ -10,6 +10,8 @@ sap.ui.define(["sap/m/LightBoxItem"],
 
          onImageLoaded: function() {
             var that = this;
+            this._clicks = 0;
+
             this._jImage = this.getAggregation("_image").getDomRef();
             this._jParent = this.getParent().getDomRef();
 
@@ -61,28 +63,52 @@ sap.ui.define(["sap/m/LightBoxItem"],
                that.isDragging = true;
             }).on("mouseup", ".draggable", function(e) {
                //update rel Pos on image
-               var filtered = that.lightsOnImage.filter(function(l) {
-                  return l.id === that.$dragging.attr("id");
-               });
+               var filtered = that._getLightOnImageById(that.$dragging.attr("id"));
 
                if (filtered.length > 0) {
                   that.updateRelImagePos(filtered[0].light, that.$dragging);
                }
-               that.isDragging = false;
+
                $(this).removeAttr("unselectable").removeClass('draggable');
 
                that.onResize();
+               setTimeout(function() {that.isDragging = false;}, 0);
+               e.stopPropagation();
+            });
+
+            $(imageWrapper).on("click", function(e) {
+               console.log("clicked");
+               if (that.lights.length > 3) return;
+               if (that.isDragging) return;
+
+               var newLight = {
+                  isMostRelevant: !that._mostRelevantExists(),
+                  phase: 0,
+                  x: 0,
+                  y: 0
+               };
+
+               that.lights.push(newLight);
+
+               that.updateRelImagePos(newLight, $(e.target), {
+                  top: e.pageY - 5,
+                  left: e.pageX - 5
+               });
+               that.addImageMarker(newLight);
             });
 
          },
 
-         updateRelImagePos: function(light, newPos) {
+         updateRelImagePos: function(light, newPos, customOffset) {
             var parent = newPos.offsetParent();
             var imageSize = this.imgSize;
 
+            var offLeft = customOffset === undefined ? newPos.offset().left : customOffset.left;
+            var offTop = customOffset === undefined ? newPos.offset().top : customOffset.top;
+
             // 1. get abs. pos of marker in current imageSize
-            var absX = newPos.offset().left - parent.offset().left - imageSize.x + 5; //plus marker width
-            var absY = newPos.offset().top - parent.offset().top - imageSize.y + 5; //plus marker height
+            var absX = offLeft - parent.offset().left - imageSize.x + 5; //plus marker width
+            var absY = offTop - parent.offset().top - imageSize.y + 5; //plus marker height
 
             if (absX < 0 || absY < 0 || absX > imageSize.w || absY > imageSize.h) return;
 
@@ -94,7 +120,6 @@ sap.ui.define(["sap/m/LightBoxItem"],
                light.y = absY / imageSize.h;
             }
 
-            //light.element = newPos;
          },
 
          addImageMarker: function(light) {
@@ -108,19 +133,67 @@ sap.ui.define(["sap/m/LightBoxItem"],
 
             d.css('top', markerPos.y);
             d.css('left', markerPos.x);
-            d.css('background-color', light.phase == 0 ? 'rgba(255, 0, 0, 0.68)' : 'rgba(0, 128, 0, 0.68)');
 
-            if (light.isMostRelevant) {
-               d.css('border', '1px solid yellow');
-            } else {
-               d.css('border', light.phase == 0 ? '1px solid red' : '1px solid green');
-            }
+            this.applyMarkerStyle(d, light);
 
-            this.lightsOnImage.push({
+            var newLightOnImage = {
                id: id,
                light: light,
                element: d
-            });
+            };
+
+            d.on("dblclick", this.onElementDblClick.bind(this));
+            d.on("contextmenu", this.onElementRightClick.bind(this));
+
+            this.lightsOnImage.push(newLightOnImage);
+         },
+
+         applyMarkerStyle: function(element, light) {
+            element.css('background-color', light.phase == 0 ? 'rgba(255, 0, 0, 0.68)' : 'rgba(0, 128, 0, 0.68)');
+
+            if (typeof light.isMostRelevant === "boolean" && light.isMostRelevant) {
+               element.css('border', '1px solid yellow');
+            } else if (typeof light.isMostRelevant === "boolean") {
+               element.css('border', light.phase == 0 ? '1px solid red' : '1px solid green');
+            } else if (light.isMostRelevant == 0) {
+               element.css('border', '1px solid yellow');
+            } else {
+               element.css('border', light.phase == 0 ? '1px solid red' : '1px solid green');
+            }
+         },
+
+         onElementDblClick: function(e) {
+            console.log("Double Click");
+            var lights = this._getLightOnImageById($(e.target).attr("id"));
+
+            if (lights.length > 0) {
+               var light = lights[0];
+               light.light.phase = light.light.phase === 0 ? 1 : 0;
+               this.applyMarkerStyle(light.element, light.light);
+            }
+
+            e.stopPropagation();
+         },
+
+         onElementRightClick: function(e) {
+            e.preventDefault();
+            console.log("rightClick");
+            var lights = this._getLightOnImageById($(e.target).attr("id"));
+
+            if (lights.length > 0) {
+               var light = lights[0];
+               var indexLightsOnImage = this.lightsOnImage.indexOf(light);
+               var indexLights = this.lights.indexOf(light.light);
+
+               if (indexLightsOnImage == -1 || indexLights == -1) return;
+
+               light.element.remove();
+               this.lightsOnImage.splice(indexLightsOnImage, 1);
+               this.lights.splice(indexLights, 1);
+            }
+
+            this.isDragging = false;
+            return false;
          },
 
          onResize: function() {
@@ -174,6 +247,26 @@ sap.ui.define(["sap/m/LightBoxItem"],
 
             return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                s4() + '-' + s4() + s4() + s4();
+         },
+
+         _getLightOnImageById: function(id) {
+            return this.lightsOnImage.filter(function(l) {
+               return l.id === id;
+            });
+         },
+
+         _mostRelevantExists: function() {
+            for (var i = 0; i < this.lights.length; i++) {
+               var light = this.lights[i];
+
+               if (typeof light.isMostRelevant === "boolean" && light.isMostRelevant) {
+                  return true;
+               } else if (light.isMostRelevant == 0) {
+                  return true;
+               }
+            }
+
+            return false;
          }
 
       });

@@ -97,7 +97,8 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
          onImagePressed: function(oEvent) {
             var light = oEvent.getSource().getBindingContext("lightsModel").getObject();
-            var copiedPositions = JSON.parse(JSON.stringify(light.lightPositions));
+            var lightPositions = light.hasOwnProperty("lightPositions") ? light.lightPositions : [];
+            var copiedPositions = JSON.parse(JSON.stringify(lightPositions));
 
             var lightBox = new LightBox({
                imageContent: new LightBoxItem({
@@ -132,6 +133,10 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             });
 
             lightBox.open();
+         },
+
+         onApprovePicturePress: function(oEvent) {
+            var light = oEvent.getSource().getBindingContext("lightsModel").getObject();
          },
 
          onRemovePicturePress: function(oEvent) {
