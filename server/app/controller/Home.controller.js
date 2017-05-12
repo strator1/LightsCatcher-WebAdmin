@@ -123,8 +123,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
                   this.setBusy(true);
                   put.success(function(data) {
-                     /*light.lightPositions = newLights;
-                     me.lightsModel.refresh();*/
+                     light.lightPositions = newLights;
                      me.approvePicture.apply(me, [light]);
                      that.setBusy(false);
                   });
@@ -149,6 +148,8 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             put.success(function(data) {
                if (!light.hasOwnProperty("approved")) {
                   me.removePictureFromModel(light);
+               } else {
+                  me.lightsModel.refresh();
                }
                MessageToast.show("Picture saved and approved!");
                me.lightBox.close();
