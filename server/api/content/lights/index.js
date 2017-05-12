@@ -35,6 +35,14 @@ export default () => {
 
    lights.get("/", (req, res) => {
 
+      var showApproved;
+
+      if (req.query.approved !== undefined) {
+         showApproved = req.query.approved == "true" ? true : false;
+      } else {
+         showApproved = false;
+      }
+
       if (req.query.user !== undefined) {
          admin.database().ref("lights/v1_0").orderByChild("user").equalTo(req.query.user).once("value").then(snapshot => {
             var output = [];
@@ -56,7 +64,16 @@ export default () => {
          snapshot.forEach(function(childSnapshot) {
             var val = childSnapshot.val();
             val.key = childSnapshot.getKey();
-            output.push(val);
+
+            if (showApproved) {
+               if (val.hasOwnProperty("approved") && val.approved) {
+                  output.push(val);
+               }
+            } else {
+               if (!val.hasOwnProperty("approved") || !val.approved) {
+                  output.push(val);
+               }
+            }
          });
          output.reverse();
          res.status(200).json({success: true, data: output});
@@ -72,6 +89,14 @@ export default () => {
          res.status(200).json({success: true, data: snapshot});
       }).catch(error => {
          res.status(500).json({success: false, data: [], msg: "Updating lightPositions not successful"});
+      });
+   });
+
+   lights.put("/:id/approve", (req, res) => {
+      admin.database().ref(`lights/v1_0/${req.params.id}`).update({approved: true}).then(snapshot => {
+         res.status(200).json({success: true, data: snapshot});
+      }).catch(error => {
+         res.status(500).json({success: false, data: [], msg: "Picture approval not successful"});
       });
    });
 

@@ -19,7 +19,8 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             this.getView().setModel(this.userModel, "userModel");
 
             this.viewModel = new JSONModel({
-               busy: false
+               busy: false,
+               showApproved: false
             });
 
             this.getView().setModel(this.viewModel, "viewModel");
@@ -48,7 +49,11 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             bSurpressMessage = bSurpressMessage === undefined ? false : bSurpressMessage;
             this.oTable.setBusy(true);
 
-            var uri = byUser === undefined ? "/api/lights" : "/api/lights?user=" + byUser;
+            var uri = byUser === undefined || byUser == null ? "/api/lights" : "/api/lights?user=" + byUser;
+
+            if (byUser === undefined || byUser == null) {
+               uri = this.viewModel.getProperty("/showApproved") ? uri + "?approved=true" : uri + "?approved=false";
+            }
 
             $.get(uri, function(data) {
                data.data.forEach(function(d) {
@@ -100,13 +105,13 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
             var lightPositions = light.hasOwnProperty("lightPositions") ? light.lightPositions : [];
             var copiedPositions = JSON.parse(JSON.stringify(lightPositions));
 
-            var lightBox = new LightBox({
+            this.lightBox = new LightBox({
                imageContent: new LightBoxItem({
                   imageSrc: light.imageUrl,
                   lights: copiedPositions,
                   alt: "Alt"
                }),
-               onSave: function(oEvent) {
+               onApprove: function(oEvent) {
                   var that = this;
                   var newLights = oEvent.getParameter("newLights");
 
@@ -118,9 +123,9 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
                   this.setBusy(true);
                   put.success(function(data) {
-                     light.lightPositions = newLights;
-                     me.lightsModel.refresh();
-                     MessageToast.show("LightPositions updated!");
+                     /*light.lightPositions = newLights;
+                     me.lightsModel.refresh();*/
+                     me.approvePicture.apply(me, [light]);
                      that.setBusy(false);
                   });
 
@@ -132,11 +137,31 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
                }
             });
 
-            lightBox.open();
+            this.lightBox.open();
          },
 
-         onApprovePicturePress: function(oEvent) {
-            var light = oEvent.getSource().getBindingContext("lightsModel").getObject();
+         approvePicture: function(light) {
+            var put = $.ajax({
+               url: "/api/lights/" + light.key + "/approve",
+               type: 'PUT'
+            });
+
+            put.success(function(data) {
+               if (!light.hasOwnProperty("approved")) {
+                  me.removePictureFromModel(light);
+               }
+               MessageToast.show("Picture saved and approved!");
+               me.lightBox.close();
+            });
+
+            put.error(function(data) {
+               //Show error dialog
+               MessageBox.error(data.msg);
+            });
+         },
+
+         onShowApprovedPress: function(oEvent) {
+            this.loadLights(true, this.oUserSearchField.getValue() !== "" ? this.oUserSearchField.getValue() : null);
          },
 
          onRemovePicturePress: function(oEvent) {
@@ -181,9 +206,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
             del.success($.proxy(function(data) {
                //Remove light from model
-               var index = this.lightsModel.oData.indexOf(light);
-               this.lightsModel.oData.splice(index, 1);
-               this.lightsModel.refresh();
+               this.removePictureFromModel(light);
 
                MessageToast.show(data.msg);
             }, me));
@@ -208,9 +231,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
             del.success($.proxy(function(data) {
                //Remove light from model
-               var index = this.lightsModel.oData.indexOf(light);
-               this.lightsModel.oData.splice(index, 1);
-               this.lightsModel.refresh();
+               this.removePictureFromModel(light);
 
                MessageToast.show(data.msg);
             }, me));
@@ -271,6 +292,12 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
                me.banAllSelectedBtn.setEnabled(true);
                MessageBox.error("Something went wrong");
             });
+         },
+
+         removePictureFromModel: function(light) {
+            var index = this.lightsModel.oData.indexOf(light);
+            this.lightsModel.oData.splice(index, 1);
+            this.lightsModel.refresh();
          },
 
          onShowUserDetailsPress: function(oEvent) {

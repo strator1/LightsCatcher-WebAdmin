@@ -225,6 +225,9 @@ sap.ui.define(["sap/m/LightBoxItem"],
          },
 
          getMarkerCoordinates: function(light) {
+            light.x = light.x > 1 ? 0 : light.x;
+            light.y = light.y > 1 ? 0 : light.y;
+            
             var lightX = this.imgSize.w > this.imgSize.h ? light.y : light.x;
             var lightY = this.imgSize.w > this.imgSize.h ? (1 - light.x) : light.y;
 

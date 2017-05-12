@@ -15,7 +15,11 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
                   }
                },
                onApprove: {
-                  parameters: {}
+                  parameters: {
+                     parameters : {
+                        lights : {type : "array"},
+                     }
+                  }
                }
             }
          },
@@ -26,7 +30,7 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
             }
 
             this._saveButtonText = "Save";
-            this._approveButtonText = "Approve Picture";
+            this._approveButtonText = "Save & Approve";
          },
 
          onSaveLights: function() {
@@ -37,7 +41,10 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
          },
 
          onApprovePicture: function() {
-            this.fireEvent("onApprove", null);
+            var lights = this._getImageContent().lights;
+            this.fireEvent("onApprove", {
+               newLights: lights
+            });
          },
 
          _getSaveButton: function () {
@@ -47,6 +54,7 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
                saveButton = new Button({
                   id: this.getId() + '-saveButton',
                   text: this._saveButtonText,
+                  visible: false,
                   type: sap.m.ButtonType.Transparent,
                   press: function () {
                      this.onSaveLights();
@@ -65,7 +73,7 @@ sap.ui.define(["sap/m/LightBox", "sap/m/LightBoxRenderer", "sap/m/Button"],
                approveButton = new Button({
                   id: this.getId() + '-approveButton',
                   icon: "sap-icon://accept",
-                  visible: false,
+                  visible: true,
                   text: this._approveButtonText,
                   type: sap.m.ButtonType.Accept,
                   press: function () {

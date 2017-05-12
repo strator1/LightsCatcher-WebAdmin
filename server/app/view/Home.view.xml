@@ -26,6 +26,7 @@
                   <headerToolbar>
                      <Toolbar>
                         <Title text="Lights" level="H2"/>
+                        <ToggleButton text="Show Approved" enabled="true" pressed="{viewModel>/showApproved}" press="onShowApprovedPress" />
                         <ToolbarSpacer></ToolbarSpacer>
                         <SearchField id="userSearchField" width="40%" placeholder="Search by User" liveChange="onSearchByUser" class="sapUiSmallMargin" />
                         <Button tooltip="Refresh" icon="sap-icon://refresh"
