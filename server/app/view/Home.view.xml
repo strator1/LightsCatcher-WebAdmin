@@ -15,61 +15,41 @@
          <l:VerticalLayout
                width="100%">
             <l:content>
-               <Table id="idLightsTable"
-                      mode="MultiSelect"
-                      includeItemInSelection="true"
-                      selectionChange="onTableSelectionChange"
-                      inset="true"
-                      growing="true"
-                      growingThreshold="10"
-                      items="{lightsModel>/}">
-                  <headerToolbar>
-                     <Toolbar>
-                        <Title text="Lights" level="H2"/>
-                        <ToggleButton text="Show Approved" enabled="true" pressed="{viewModel>/showApproved}" press="onShowApprovedPress" />
-                        <ToolbarSpacer></ToolbarSpacer>
-                        <SearchField id="userSearchField" width="40%" placeholder="Search by User" liveChange="onSearchByUser" class="sapUiSmallMargin" />
-                        <Button tooltip="Refresh" icon="sap-icon://refresh"
-                                press="onRefreshListPressed"/>
-                     </Toolbar>
-                  </headerToolbar>
-                  <columns>
-                     <Column>
-                        <Text text="Image"/>
-                     </Column>
-                     <Column minScreenWidth="Tablet" demandPopin="true">
-                        <Text text="Phases"/>
-                     </Column>
-                     <Column minScreenWidth="Tablet" demandPopin="true">
-                        <Text text="User"/>
-                     </Column>
-                     <Column minScreenWidth="Tablet" demandPopin="true">
-                        <Text text="Created At"/>
-                     </Column>
-                     <Column >
-                        <Text text="Actions"/>
-                     </Column>
-                  </columns>
-                  <items>
-                     <ColumnListItem>
-                        <cells>
-                           <Image
-                                 src="{lightsModel>imageUrl}"
-                                 press="onImagePressed"
-                                 width="50%"
-                                 height="10%"/>
-                           <Text text="{lightsModel>lightPhases}"/>
-                           <Link text="{lightsModel>user}" press="onShowUserDetailsPress"/>
-                           <Text text="{path: 'lightsModel>createdAt', formatter: '.formatter.formatTimestampToData'}"/>
-                           <VBox>
-                              <Button type="Transparent" icon="sap-icon://search" text="Search by user" press="onSearchByUserPress" />
-                              <Button type="Transparent" icon="sap-icon://delete" text="Remove Picture" press="onRemovePicturePress" />
-                              <Button type="Reject" icon="sap-icon://private" text="Remove Picture &amp; Ban User" press="onRemovePicAndUserPress" />
-                           </VBox>
-                        </cells>
-                     </ColumnListItem>
-                  </items>
-               </Table>
+               <IconTabBar
+                     id="iconTabBarHome"
+                     backgroundDesign="Solid"
+                     expanded="true"
+                     expandable="false"
+                     upperCase="true"
+                     headerMode="Inline"
+                     selectedKey="lights"
+                     applyContentPadding="false"
+                     stretchContentHeight="true"
+                     select="onTabSelect">
+               <items>
+               <IconTabFilter
+                     text="Overview"
+                     key="overview">
+                  <core:Fragment
+                        fragmentName="LightsCatcher.view.Overview"
+                        type="XML" />
+               </IconTabFilter>
+                  <IconTabFilter
+                        text="Lights"
+                        key="lights">
+                     <core:Fragment
+                           fragmentName="LightsCatcher.view.Lights"
+                           type="XML" />
+                  </IconTabFilter>
+                  <IconTabFilter
+                        text="Map"
+                        key="map">
+                     <core:Fragment
+                           fragmentName="LightsCatcher.view.Map"
+                           type="XML" />
+                  </IconTabFilter>
+               </items>
+               </IconTabBar>
             </l:content>
          </l:VerticalLayout>
       </content>

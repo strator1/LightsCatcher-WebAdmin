@@ -30,6 +30,8 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
             this.oPage = this.getView().byId("idHomePage");
             this.oTable = this.getView().byId("idLightsTable");
+            this.oMap = this.getView().byId("mapHtml");
+            this.oMap.setContent("<div id='map' style='height:100%'/>");
             this.oUserSearchField = this.getView().byId("userSearchField");
             this.deleteSelectedBtn = this.getView().byId("idDeleteSelectedBtn");
             this.banAllSelectedBtn = this.getView().byId("idBanAllSelectedBtn");
@@ -43,6 +45,48 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
             this.oPage.setShowFooter(false);
             this.loadLights();
+         },
+
+         initMap: function() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+               zoom: 12,
+               center: {lat: 48.3583992, lng: 10.8614402},
+               clickableIcons: true
+            });
+
+            var image = 'http://www.hs-augsburg.de/~strator/ampel/traffic-light.png';
+
+            var infowindow = new google.maps.InfoWindow();
+
+            firebase.database().ref('/lights/v1_0/').orderByChild('uid').once('value').then(function(snapshot) {
+               snapshot.forEach(function(childSnapshot) {
+                  var latitude = Number(childSnapshot.val().latitude);
+                  var longitude = Number(childSnapshot.val().longitude);
+                  var imageUrl = childSnapshot.val().imageUrl;
+
+                  var marker = new google.maps.Marker({
+                     position: {lat: latitude, lng: longitude},
+                     map: map,
+                     icon: image,
+                     clickable: true
+                  });
+                  marker.addListener('click', function() {
+                     infowindow.setContent('<img src=\"' + imageUrl + '\" height=200></img>');
+                     infowindow.open(map, marker);
+                  });
+               });
+            });
+         },
+
+         onTabSelect: function(oEvent) {
+            var selectedKey = oEvent.getParameter("selectedKey");
+            switch (selectedKey) {
+               case "map":
+                  this.initMap();
+                  break;
+               default:
+                  break;
+            }
          },
 
          loadLights: function(bSurpressMessage, byUser) {

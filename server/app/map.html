@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enter your title here</title>
+    <script src="https://www.gstatic.com/firebasejs/3.7.5/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyCFKtdm7kUURW7OgiQPxAdZKJ6ejo3Ga7Q",
+            authDomain: "hsaampelapp.firebaseapp.com",
+            databaseURL: "https://hsaampelapp.firebaseio.com",
+            projectId: "hsaampelapp",
+            storageBucket: "hsaampelapp.appspot.com",
+            messagingSenderId: "849015534162"
+        };
+        firebase.initializeApp(config);
+    </script>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
+</head>
+<body>
+<div id="map"></div>
+<script>
+    function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: {lat: 48.3583992, lng: 10.8614402},
+            clickableIcons: true
+        });
+
+        var image = 'http://www.hs-augsburg.de/~strator/ampel/traffic-light.png';
+
+        var infowindow = new google.maps.InfoWindow();
+
+        firebase.database().ref('/lights/v1_0/').orderByChild('uid').once('value').then(function(snapshot) {
+            snapshot.forEach(function(childSnapshot) {
+                var latitude = Number(childSnapshot.val().latitude);
+                var longitude = Number(childSnapshot.val().longitude);
+                var imageUrl = childSnapshot.val().imageUrl;
+
+                var marker = new google.maps.Marker({
+                    position: {lat: latitude, lng: longitude},
+                    map: map,
+                    icon: image,
+                    clickable: true
+                });
+                marker.addListener('click', function() {
+                    infowindow.setContent('<img src=\"' + imageUrl + '\" height=200></img>');
+                    infowindow.open(map, marker);
+                });
+            });
+        });
+    }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAROd8ilWhGREumY7qUY1nbjteedCkuIyU&callback=initMap"></script>
+
+</body>
+</html>

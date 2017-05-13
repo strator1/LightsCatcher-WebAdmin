@@ -124,14 +124,12 @@ export default () => {
       }
 
       deletePhotoWithKey(req.params.key).then(success => {
-         debugger;
+
          deactivateUser(req.params.uid).then(success => {
-            debugger;
             res.status(200).json({success: true, data: [], msg: "Photo deleted and User banned"});
          });
 
       }).catch(err => {
-         debugger;
          res.status(500).json({success: false, data: [], msg: "Error deleting photo"});
       });
    });
