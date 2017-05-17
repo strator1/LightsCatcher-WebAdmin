@@ -47,7 +47,7 @@ admin.initializeApp({
 
 app.listen(PORT, function() {
    console.log("Server running on " + PORT);
-   //opn("http://localhost:4000/app/");
+   opn("http://localhost:4000/app/");
 });
 
 /*const adminService = new AdminService();*/
