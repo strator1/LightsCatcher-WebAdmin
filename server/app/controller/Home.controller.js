@@ -58,11 +58,13 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
             var infowindow = new google.maps.InfoWindow();
 
-            firebase.database().ref('/lights/v1_0/').orderByChild('uid').once('value').then(function(snapshot) {
-               snapshot.forEach(function(childSnapshot) {
-                  var latitude = Number(childSnapshot.val().latitude);
-                  var longitude = Number(childSnapshot.val().longitude);
-                  var imageUrl = childSnapshot.val().imageUrl;
+            var uri = "/api/lights?approved=true";
+
+            $.get(uri, function(result) {
+               result.data.forEach(function(d) {
+                  var latitude = Number(d.latitude);
+                  var longitude = Number(d.longitude);
+                  var imageUrl = d.imageUrl;
 
                   var marker = new google.maps.Marker({
                      position: {lat: latitude, lng: longitude},

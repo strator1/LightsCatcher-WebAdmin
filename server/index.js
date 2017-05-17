@@ -18,6 +18,7 @@ let app = express();
 let PORT = process.env.PORT || 4000;
 
 app.set("logDirectory", __dirname + config.logDirectory);
+app.set("tempDirectory", __dirname + config.tempDir);
 
 const logger = new Logger(app, true);
 
@@ -46,7 +47,7 @@ admin.initializeApp({
 
 app.listen(PORT, function() {
    console.log("Server running on " + PORT);
-   opn("http://localhost:4000/app/");
+   //opn("http://localhost:4000/app/");
 });
 
 /*const adminService = new AdminService();*/
