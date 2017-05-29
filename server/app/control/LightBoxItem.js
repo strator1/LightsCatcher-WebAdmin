@@ -40,7 +40,7 @@ sap.ui.define(["sap/m/LightBoxItem"],
 
          addMouseEvents: function() {
             var that = this;
-            var imageWrapper = $($(this.getParent().getDomRef()).children()[0])
+            var imageWrapper = $($(this.getParent().getDomRef()).children()[1]);
             this.$dragging = null;
             this.isDragging = false;
 
@@ -124,7 +124,7 @@ sap.ui.define(["sap/m/LightBoxItem"],
          },
 
          addImageMarker: function(light) {
-            var imageWrapper = $($(this.getParent().getDomRef()).children()[0]);
+            var imageWrapper = $($(this.getParent().getDomRef()).children()[1]);
             var id = this._guid();
             var d = $(document.createElement('div'));
             d.attr("id", id);
