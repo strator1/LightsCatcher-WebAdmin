@@ -56,7 +56,13 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
 
             var image = 'http://www.hs-augsburg.de/~strator/ampel/traffic-light.png';
 
-            var infowindow = new google.maps.InfoWindow();
+            var infowindow = new google.maps.InfoWindow({
+               content: "<div id=\"header\"></div><canvas id=\"canvas\" height=\"350\" width=\"300\"></canvas><div id=\"user\"></div><div id=\"timestamp\"></div><div id=\"coordinates\"></div>",
+               width: 300,
+               height: 350,
+               maxWidth: 300,
+               maxHeight: 350
+            });
 
             var uri = "/api/lights?approved=true";
 
@@ -65,6 +71,10 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
                   var latitude = Number(d.latitude);
                   var longitude = Number(d.longitude);
                   var imageUrl = d.imageUrl;
+                  var createdAt = d.createdAt;
+                  var username = d.user;
+
+                  var geocoder = new google.maps.Geocoder();
 
                   var marker = new google.maps.Marker({
                      position: {lat: latitude, lng: longitude},
@@ -73,8 +83,46 @@ sap.ui.define(["sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "Lig
                      clickable: true
                   });
                   marker.addListener('click', function() {
-                     infowindow.setContent('<img src=\"' + imageUrl + '\" height=200></img>');
                      infowindow.open(map, marker);
+
+                     var latlng = {lat: parseFloat(latitude), lng: parseFloat(longitude)};
+                     geocoder.geocode({'location': latlng}, function(results, status) {
+                        if (status === 'OK') {
+                           var header=document.getElementById("header");
+                           header.innerHTML = "<b>" + results[1].formatted_address + "</b>";
+                        }
+                     });
+
+                     var coordinates=document.getElementById("coordinates");
+                     coordinates.innerHTML = "latitude: " + latitude + "<br/>" + "longitude: " + longitude;
+                     var user=document.getElementById("user");
+                     user.innerHTML = "User: " + username;
+                     var timestamp=document.getElementById("timestamp");
+                     timestamp.innerHTML = "Datum: " + moment(new Date(Number.parseInt(createdAt))).format("dddd, DD.MM.YYYY HH:mm");
+
+                     var canvas=document.getElementById("canvas");
+                     var ctx=canvas.getContext("2d");
+                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                     var img = loadImage(
+                        imageUrl,
+                        function(imag) {
+                           imag = loadImage.scale(imag, {maxHeight: 300});
+                           if (imag.width > imag.height) {
+                              ctx.translate(canvas.width/2, canvas.height/2);
+                              ctx.rotate(Math.PI / 2);
+                              ctx.drawImage(imag, -imag.width/2, -imag.height/2, imag.width, imag.height);
+                              ctx.rotate(-Math.PI / 2);
+                              ctx.translate(-canvas.width/2, -canvas.height/2);
+                           } else {
+                              ctx.drawImage(imag, 0, 0, imag.width, imag.height);
+                           }
+                        },
+                        {
+                           orientation: true,
+                           crossOrigin: false
+                        }
+                     );
                   });
                });
             });
