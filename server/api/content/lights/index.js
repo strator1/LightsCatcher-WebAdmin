@@ -59,7 +59,7 @@ export default () => {
          return;
       }
 
-      admin.database().ref("lights/v1_0").orderByChild("createdAt").limitToLast(1000).once("value").then(snapshot => {
+      admin.database().ref("lights/v1_0").orderByChild("createdAt").once("value").then(snapshot => {
          var output = [];
          snapshot.forEach(function(childSnapshot) {
             var val = childSnapshot.val();
